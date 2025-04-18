@@ -60,7 +60,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       {/* Sidebar */}
       <div className="w-[240px] bg-dark-200 min-h-screen p-6 flex flex-col gap-8">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="MockMate Logo" width={38} height={32} />
+          <Image src="/logo.svg" alt="Interview Agent Logo" width={38} height={32} />
           <h2 className="text-primary-100">Interview Agent</h2>
         </Link>
 
