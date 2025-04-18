@@ -9,8 +9,15 @@ export function cn(...inputs: ClassValue[]) {
 const techIconBaseURL = "https://cdn.jsdelivr.net/gh/devicons/devicon/icons";
 
 const normalizeTechName = (tech: string) => {
-  const key = tech.toLowerCase().replace(/\.js$/, "").replace(/\s+/g, "");
-  return mappings[key as keyof typeof mappings];
+  if (!tech) return 'default';
+
+  try {
+    const key = tech.toLowerCase().replace(/\.js$/, "").replace(/\s+/g, "");
+    return mappings[key as keyof typeof mappings] || key;
+  } catch (error) {
+    console.error('Error normalizing tech name:', error);
+    return 'default';
+  }
 };
 
 const checkIconExists = async (url: string) => {
@@ -22,23 +29,40 @@ const checkIconExists = async (url: string) => {
   }
 };
 
-export const getTechLogos = async (techArray: string[]) => {
-  const logoURLs = techArray.map((tech) => {
-    const normalized = normalizeTechName(tech);
-    return {
-      tech,
-      url: `${techIconBaseURL}/${normalized}/${normalized}-original.svg`,
-    };
-  });
+export const getTechLogos = async (techArray: string[] | string) => {
+  // Handle both string and array inputs
+  const technologies = Array.isArray(techArray)
+    ? techArray
+    : typeof techArray === 'string'
+      ? techArray.split(',').map(t => t.trim())
+      : [];
 
-  const results = await Promise.all(
-    logoURLs.map(async ({ tech, url }) => ({
-      tech,
-      url: (await checkIconExists(url)) ? url : "/tech.svg",
-    }))
-  );
+  if (technologies.length === 0) {
+    return [{ tech: 'default', url: '/tech.svg' }];
+  }
 
-  return results;
+  try {
+    const logoURLs = technologies.map((tech) => {
+      const normalized = normalizeTechName(tech);
+      if (!normalized) {
+        return {
+          tech,
+          url: '/tech.svg',
+        };
+      }
+      return {
+        tech,
+        url: `${techIconBaseURL}/${normalized}/${normalized}-original.svg`,
+      };
+    });
+
+    // For client-side, we'll skip the actual fetch check to avoid CORS issues
+    // and just return the URLs directly
+    return logoURLs;
+  } catch (error) {
+    console.error('Error in getTechLogos:', error);
+    return [{ tech: 'default', url: '/tech.svg' }];
+  }
 };
 
 export const getRandomInterviewCover = () => {
